@@ -6,10 +6,11 @@ class ContainerLiquid : Container, IHazardNotifier
     {
         // One type of liquid can only exist in the container
         if(this.loadedPayloads.Count != 0) {
-            throw new LiquidAlreadyFilledException("Liquid container already filled, unload it first");
+            throw new ContainerAlreadyFilledException("Liquid container already filled, unload it first");
         }
 
         int maxPayloadWeight = (int)Math.Round(this.maxPayloadWeight * 0.9);
+        
         if(payload is PayloadDangerous) {
             maxPayloadWeight = (int)Math.Round(this.maxPayloadWeight * 0.5);
         }
