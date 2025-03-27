@@ -4,6 +4,7 @@ class ContainerLiquid : Container, IHazardNotifier
 
     public override void Load(Payload payload)
     {
+        // TODO: This is wrong, need to fix
         // One type of liquid can only exist in the container
         if(this.loadedPayloads.Count != 0) {
             throw new ContainerAlreadyFilledException("Liquid container already filled, unload it first");

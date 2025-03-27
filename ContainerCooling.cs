@@ -1,19 +1,70 @@
 class ContainerCooling : Container
 {
-    public ContainerCooling(int containerWeight, int height, int depth, int maxPayloadWeight) : base(containerWeight, height, depth, maxPayloadWeight) {}
+    private double? temperature;
+    private EProduct? productType;
 
-    
+    private static Dictionary<EProduct, double> productTemperatureTable = new Dictionary<EProduct, double> {
+        { EProduct.BANANAS,    13.3 },
+        { EProduct.CHOCOLATE,  18 },
+        { EProduct.FISH,       2 },
+        { EProduct.MEAT,       -15 },
+        { EProduct.ICE_CREAM,  -18 },
+        { EProduct.CHEESE,     7.2 },
+        { EProduct.BUTTER,     20.5 }
+    };
+
+    public ContainerCooling(int containerWeight, int height, int depth, int maxPayloadWeight, EProduct productType, double temperature) : base(containerWeight, height, depth, maxPayloadWeight) {
+        this.temperature = temperature;
+        this.productType = productType;
+    }
 
     public override void Load(Payload payload)
     {
-        throw new NotImplementedException();
+        if(payload is not PayloadProduct) {
+            throw new PayloadMismatchException("Payload is not a product");
+        }
+
+        PayloadProduct payloadProduct = (PayloadProduct)payload;
+
+        if(payloadProduct.ProductType != this.productType) {
+            throw new PayloadMismatchException($"Product is not the same type, {payloadProduct.ProductType} -> {this.productType}");
+        }
+
+        double productTemperature;
+
+        if(!ContainerCooling.productTemperatureTable.TryGetValue(payloadProduct.ProductType, out productTemperature)) {
+            throw new Exception("For some reason the product does not exist in the temperature table, add it in");
+        }
+
+        if(this.temperature < productTemperature) {
+            throw new Exception($"Temperature is too low for {payloadProduct.PayloadName} in container {this.GetSerialNumber()}");
+        }
+
+        int overallWeight = 0;
+        
+        foreach(PayloadProduct iPayloadProduct in this.loadedPayloads) {
+            overallWeight += iPayloadProduct.Weight;
+        }
+
+        if(overallWeight + payloadProduct.Weight > this.maxPayloadWeight) {
+            throw new OverfillException($"Container {this.GetSerialNumber()} is full, unload it first"); 
+        }
+
+        this.loadedPayloads.Add(payloadProduct);
     }
 
     public override Payload? Unload()
     {
-        throw new NotImplementedException();
+        if(this.loadedPayloads.Count == 0) {
+            throw new EmptyContainerException("Container already empty");
+        }
+
+        Payload res = this.loadedPayloads.Last();
+        this.loadedPayloads.Remove(res);
+        return res;
     }
 
+    // TODO
     public override string ToString()
     {   
         if(this.loadedPayloads.Count == 0) {
@@ -26,6 +77,6 @@ class ContainerCooling : Container
 
     public override string GetSerialNumber()
     {
-        throw new NotImplementedException();
+        return $"KON-C-{this.containerId}";
     }
 }
