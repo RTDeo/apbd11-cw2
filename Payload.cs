@@ -6,4 +6,9 @@ class Payload
         this.Weight         = weight;
         this.PayloadName    = payloadName;
     }
+
+    public override string ToString()
+    {
+        return $"Payload '{this.PayloadName}' ({this.Weight}kg)";
+    }
 }

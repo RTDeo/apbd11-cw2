@@ -1,7 +1,10 @@
 class ContainerGas : Container, IHazardNotifier
 {
-    private int pressure;
-    public ContainerGas(int containerWeight, int height, int depth, int maxPayloadWeight) : base(containerWeight, height, depth, maxPayloadWeight) {}
+    private static int uniqueCounter = 0;
+    public ContainerGas(int containerWeight, int height, int depth, int maxPayloadWeight) : base(containerWeight, height, depth, maxPayloadWeight) {
+        this.containerId = ContainerGas.uniqueCounter;
+        ContainerGas.uniqueCounter++;
+    }
 
     public override void Load(Payload payload)
     {        
@@ -35,7 +38,7 @@ class ContainerGas : Container, IHazardNotifier
         this.loadedPayloads[1].Weight = overallGasWeight - newLeftoverGasWeight;
     }
 
-    public override Payload? Unload()
+    public override Payload Unload()
     {
         // There must be 2 payloads, 5% of gas and 95% of gas
         if(this.loadedPayloads.Count < 2) {
@@ -66,11 +69,22 @@ class ContainerGas : Container, IHazardNotifier
             gasPressure = this.loadedPayloads[1].Weight;
         }
 
-        return $"Container serial number: {this.GetSerialNumber()}\n\tType: Gas Container\n\tPayload: {gasName}\n\t\tPayload amount: {gasPressure+leftOverPressure} ({gasPressure}+{leftOverPressure})";
+        return $"Container serial number: {this.GetSerialNumber()}\n\tType: Gas Container\n\tPayload: {gasName}\n\tPayload amount: {gasPressure+leftOverPressure} ({gasPressure}+{leftOverPressure})";
     }
 
     public void sendDangerNotification(string msg)
     {
         Console.WriteLine($"[DANGER] {msg} - container {this.GetSerialNumber()}");
+    }
+
+    public override int GetOverallWeight()
+    {
+        int overallWeight = 0;
+        
+        foreach(Payload product in this.loadedPayloads) {
+            overallWeight += product.Weight;
+        }
+
+        return overallWeight;
     }
 }

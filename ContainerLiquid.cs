@@ -1,6 +1,10 @@
 class ContainerLiquid : Container, IHazardNotifier
 {
-    public ContainerLiquid(int containerWeight, int height, int depth, int maxPayloadWeight) : base(containerWeight, height, depth, maxPayloadWeight) {}
+    private static int uniqueCounter = 0;
+    public ContainerLiquid(int containerWeight, int height, int depth, int maxPayloadWeight) : base(containerWeight, height, depth, maxPayloadWeight) {
+        this.containerId = ContainerLiquid.uniqueCounter;
+        ContainerLiquid.uniqueCounter++;
+    }
 
     public override void Load(Payload payload)
     {
@@ -25,7 +29,7 @@ class ContainerLiquid : Container, IHazardNotifier
         return;
     }
 
-    public override Payload? Unload()
+    public override Payload Unload()
     {
         if(this.loadedPayloads.Count == 0) {
             throw new EmptyContainerException($"No liquid loaded in container {this.GetSerialNumber()}");
@@ -48,11 +52,22 @@ class ContainerLiquid : Container, IHazardNotifier
         }
 
         Payload payload = this.loadedPayloads.Last();
-        return $"Container serial number: {this.GetSerialNumber()}\n\tType: Liquid Container\n\tPayload: {payload.PayloadName}\n\t\tPayload amount: {payload.Weight}";
+        return $"Container serial number: {this.GetSerialNumber()}\n\tType: Liquid Container\n\tPayload: {payload.PayloadName}\n\tPayload amount: {payload.Weight}";
     }
 
     public override string GetSerialNumber()
     {
         return $"KON-L-{this.containerId}";
+    }
+
+    public override int GetOverallWeight()
+    {
+        int overallWeight = 0;
+        
+        foreach(Payload product in this.loadedPayloads) {
+            overallWeight += product.Weight;
+        }
+
+        return overallWeight;
     }
 }

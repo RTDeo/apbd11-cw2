@@ -1,5 +1,6 @@
 class ContainerCooling : Container
 {
+    private static int uniqueCounter = 0;
     private double? temperature;
     private EProduct? productType;
 
@@ -16,6 +17,8 @@ class ContainerCooling : Container
     public ContainerCooling(int containerWeight, int height, int depth, int maxPayloadWeight, EProduct productType, double temperature) : base(containerWeight, height, depth, maxPayloadWeight) {
         this.temperature = temperature;
         this.productType = productType;
+        this.containerId = ContainerCooling.uniqueCounter;
+        ContainerCooling.uniqueCounter++;
     }
 
     public override void Load(Payload payload)
@@ -53,7 +56,7 @@ class ContainerCooling : Container
         this.loadedPayloads.Add(payloadProduct);
     }
 
-    public override Payload? Unload()
+    public override Payload Unload()
     {
         if(this.loadedPayloads.Count == 0) {
             throw new EmptyContainerException("Container already empty");
@@ -71,12 +74,32 @@ class ContainerCooling : Container
             return $"Container serial number: {this.GetSerialNumber()}\n\tType: Liquid Container\n\tPayload: N/A";
         }
 
-        Payload payload = this.loadedPayloads.Last();
-        return $"Container serial number: {this.GetSerialNumber()}\n\tType: Liquid Container\n\tPayload: {payload.PayloadName}\n\t\tPayload amount: {payload.Weight}";
+        String productInfo = "";
+        int overallWeight = 0;
+
+        foreach(PayloadProduct payloadProduct in this.loadedPayloads) {
+            productInfo += ", " + payloadProduct.ToString();
+            overallWeight += payloadProduct.Weight;
+        }
+
+        productInfo = productInfo[1..];
+
+        return $"Container serial number: {this.GetSerialNumber()}\n\tType: Liquid Container\n\tPayload[s]: {productInfo}\n\tPayload amount: {overallWeight}";
     }
 
     public override string GetSerialNumber()
     {
         return $"KON-C-{this.containerId}";
+    }
+
+    public override int GetOverallWeight()
+    {
+        int overallWeight = 0;
+        
+        foreach(PayloadProduct product in this.loadedPayloads) {
+            overallWeight += product.Weight;
+        }
+
+        return overallWeight;
     }
 }
